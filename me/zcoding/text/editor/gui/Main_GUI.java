@@ -2,8 +2,6 @@ package me.zcoding.text.editor.gui;
 
 import java.awt.Color;
 import java.awt.GridLayout;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -14,6 +12,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.border.EmptyBorder;
 
+import me.zcoding.text.editor.gui.syntaxHighlighting.Colored_Doc;
 import me.zcoding.text.editor.lang.LanguageManager;
 
 public class Main_GUI extends JFrame {
@@ -22,9 +21,7 @@ public class Main_GUI extends JFrame {
 
 	private JPanel contentPane;
 
-	private Map<String, Color> words = new HashMap<String, Color>();
-
-	private Style doc = new Style();
+	Colored_Doc doc = new Colored_Doc();
 
 	public void init() {
 		try {
@@ -42,21 +39,11 @@ public class Main_GUI extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 865, 557);
 
-		words.put("hallo", Color.RED);
-
 		Color comment = new Color(63, 197, 95);
 
 		Color javadoc = new Color(63, 95, 191);
 
 		Color annotation = new Color(100, 100, 100);
-
-		doc.setCommentColor(comment);
-
-		doc.setJavadocColor(javadoc);
-
-		doc.setAnnotationColor(annotation);
-
-		doc.setKeywords(words);
 
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
@@ -72,6 +59,15 @@ public class Main_GUI extends JFrame {
 
 		JMenu mnEinstellungen_1 = new JMenu("Einstellungen");
 		menuBar.add(mnEinstellungen_1);
+
+		JMenu mnLanguages = new JMenu("Languages");
+		mnEinstellungen_1.add(mnLanguages);
+
+		JMenuItem mntmDefault = new JMenuItem("Default");
+		mnLanguages.add(mntmDefault);
+
+		addLanguages(mnLanguages);
+
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -83,5 +79,12 @@ public class Main_GUI extends JFrame {
 		JTextPane textPane = new JTextPane();
 		textPane.setDocument(doc);
 		scrollPane.setViewportView(textPane);
+	}
+
+	private void addLanguages(JMenu lang) {
+		// for (Language language : Settings.avaiableLanguages) {
+		// JMenuItem item = new JMenuItem(language.getName());
+		// lang.add(item);
+		// }
 	}
 }

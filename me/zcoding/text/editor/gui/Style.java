@@ -87,20 +87,13 @@ public class Style extends DefaultStyledDocument {
 			this.remove(pos - str.length(), str.length());
 
 			/*
+			 * replace it with the same word, but new formatting we MUST call
+			 * 
+			 * the super class insertString method here, otherwise we would end
+			 * 
+			 * up in an infinite loop !!
 			 * 
 			 * 
-			 * 66 * replace it with the same word, but new formatting we MUST
-			 * call
-			 * 
-			 * 
-			 * 67 * the super class insertString method here, otherwise we would
-			 * end
-			 * 
-			 * 
-			 * 68 * up in an infinite loop !!
-			 * 
-			 * 
-			 * 69
 			 */
 
 			super.insertString(pos - str.length(), str, as);
@@ -473,6 +466,9 @@ public class Style extends DefaultStyledDocument {
 
 	}
 
+	/**
+	 * Checks the Comments
+	 */
 	private void checkForComment() {
 
 		int offs = this.currentPos;

@@ -14,4 +14,14 @@ public class LanguageManager {
 		return getToReturn;
 	}
 
+	public static String getFromLanguage(String toGet, Language l) {
+		String getToReturn = l.getLangMap().get(toGet);
+
+		if (getToReturn.isEmpty() || getToReturn == null) {
+			getToReturn = new DefaultLanguage().getLangMap().get(toGet);
+		}
+
+		return getToReturn;
+	}
+
 }
