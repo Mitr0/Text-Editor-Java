@@ -3,9 +3,9 @@ package me.zcoding.text.editor.filesystem;
 import java.util.ArrayList;
 import java.util.List;
 
-import me.zcoding.text.editor.lang.DefaultLanguage;
+import me.zcoding.text.editor.gui.syntaxHighlighting.LoadSyntax;
 import me.zcoding.text.editor.lang.LoadLanguage;
-import me.zcoding.text.editor.utils.Settings;
+import me.zcoding.text.editor.settings.Settings;
 
 public class FileManager {
 
@@ -16,26 +16,33 @@ public class FileManager {
 	public FileManager() {
 		INSTANCE = this;
 		addAll();
+		read();
 
 		onLoad();
 	}
 
-	public void onLoad() {
-		LoadLanguage language = new LoadLanguage();
-		Settings.avaiableLanguages = language.getLanguages();
+	public LoadLanguage loadLanguage;
+	public LoadSyntax loadSyntax;
 
-		if (Settings.curLanguage == null) {
-			Settings.curLanguage = new DefaultLanguage();
-		}
+	public void onLoad() {
+		loadLanguage = new LoadLanguage();
+		loadSyntax = new LoadSyntax();
+		Settings.allSyntaxes = loadSyntax.getColoredKeywords();
+		Settings.avaiableLanguages = loadLanguage.getLanguages();
 	}
 
 	private void addAll() {
-
 	}
 
 	public void write() {
 		for (A_File file : getAllFiles()) {
 			file.write();
+		}
+	}
+
+	public void read() {
+		for (A_File file : getAllFiles()) {
+			file.read();
 		}
 	}
 

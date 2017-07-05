@@ -1,9 +1,12 @@
 package me.zcoding.text.editor.filesystem;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import me.zcoding.text.editor.utils.Utils;
@@ -42,9 +45,11 @@ public abstract class A_File {
 	 * 
 	 * @return
 	 */
-	public abstract List<String> toWrite();
+	public abstract List<String> toWrite() throws Exception;
 
-	public void write() {
+	public abstract void onRead(List<String> data) throws Exception;
+
+	protected void write() {
 		try {
 			FileWriter writer = new FileWriter(curFile);
 			BufferedWriter bufferedWriter = new BufferedWriter(writer);
@@ -53,8 +58,27 @@ public abstract class A_File {
 				bufferedWriter.write(string);
 				bufferedWriter.newLine();
 			}
+			bufferedWriter.flush();
 			bufferedWriter.close();
-		} catch (IOException e) {
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	protected void read() {
+		try {
+			List<String> rList = new ArrayList<>();
+
+			FileReader fileReader = new FileReader(curFile);
+			BufferedReader bufferedReader = new BufferedReader(fileReader);
+
+			String line;
+			while ((line = bufferedReader.readLine()) != null) {
+				rList.add(line);
+			}
+			bufferedReader.close();
+			onRead(rList);
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}

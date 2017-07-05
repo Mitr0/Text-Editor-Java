@@ -6,10 +6,17 @@ import me.zcoding.text.editor.utils.Utils;
 
 public class Main {
 
+	@SuppressWarnings("unused")
 	public static void main(String[] main) {
 		try {
 			if (!Utils.mainFolder.exists())
 				Utils.mainFolder.mkdir();
+			if (!Utils.langFolder.exists())
+				Utils.langFolder.mkdir();
+			if (!Utils.settingsFolder.exists())
+				Utils.settingsFolder.mkdir();
+			if (!Utils.syntaxFolder.exists())
+				Utils.syntaxFolder.mkdir();
 
 			FileManager fileManager = new FileManager();
 

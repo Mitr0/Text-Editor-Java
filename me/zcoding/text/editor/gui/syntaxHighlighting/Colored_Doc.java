@@ -10,24 +10,17 @@ import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
+import me.zcoding.text.editor.settings.Settings;
+
 @SuppressWarnings("serial")
 public class Colored_Doc extends DefaultStyledDocument {
 
 	private List<ColoredKeyWord> coloredKeyWords = new ArrayList<>();
-	private final List<WritingMode> writingModes = new ArrayList<WritingMode>() {
-		{
-			add(new WritingMode("text", 0));
-			// TODO: Add more Writingmodes
-		}
-	};
 
-	private SimpleAttributeSet attributeSet = new SimpleAttributeSet();
-
-	private int currentPosition;
-	private String curWord = "";
+	private SimpleAttributeSet standard = new SimpleAttributeSet();
 
 	public Colored_Doc() {
-		StyleConstants.setForeground(attributeSet, Color.red);
+		StyleConstants.setForeground(standard, Color.BLACK);
 	}
 
 	/**
@@ -38,17 +31,22 @@ public class Colored_Doc extends DefaultStyledDocument {
 	public void setColoredKeyWords(List<ColoredKeyWord> words) {
 		if (words != null) {
 			for (ColoredKeyWord word : words) {
-
 				SimpleAttributeSet temp = new SimpleAttributeSet();
 				StyleConstants.setForeground(temp, word.getColor());
-
 				StyleConstants.setBold(temp, word.isBold());
 				StyleConstants.setItalic(temp, word.isItallic());
 				StyleConstants.setStrikeThrough(temp, word.isStrikethrough());
 				StyleConstants.setUnderline(temp, word.isUnderlined());
-
+				word.setAttributeSet(temp);
 				this.coloredKeyWords.add(word);
 			}
+		} else {
+			setColoredKeyWords(new DefaultSyntax().getColoredKeyWords());
+		}
+		try {
+			colorizeTheText();
+		} catch (BadLocationException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -62,83 +60,48 @@ public class Colored_Doc extends DefaultStyledDocument {
 	}
 
 	public void insertString(int offs, String str, AttributeSet a) throws BadLocationException {
+		setColoredKeyWords(Settings.curSyntax.getColoredKeyWords());
 		super.insertString(offs, str, a);
-
-		int stringLength = str.length();
-		int stringEndPosition = offs + stringLength;
-		int stringPosition;
-
-		for (int i = offs; i < stringEndPosition; i++) {
-			currentPosition = i;
-			stringPosition = i - offs;
-			processCharacter(str.charAt(stringPosition));
-		}
-		currentPosition = offs;
+		colorizeTheText();
 	}
 
-	private void processCharacter(char c) {
-		char[] characterString = new char[1];
-		characterString[0] = c;
-		checkTextForKeyWords();
-		String string = new String(characterString);
-		processCharString(string);
+	public void colorizeTheText() throws BadLocationException {
+		checkTextForKeyWords(0, this.getLength());
 	}
 
-	private void processCharString(String s) {
-		char strChar = s.charAt(0);
-		// TODO: Handle String processing
-		curWord += s;
-	}
-
-	private void insertStringWord(String str, int pos, SimpleAttributeSet simpleAttributeSet) throws Exception {
-		this.remove(pos - str.length(), pos);
-		super.insertString(pos - str.length(), str, simpleAttributeSet);
-
-	}
-
-	private void insertStringText(String s, int pos) throws Exception {
-		this.remove(pos, s.length());
-		super.insertString(pos, s, attributeSet);
-	}
-
-	private void checkTextForKeyWords() {
-		try {
-			processString(this.getText(0, this.getLength()));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	private void processString(String in) {
-		if (in.contains("ComputerCamp")) {
-			int pos = in.indexOf("ComputerCamp");
-			int end = pos + "ComputerCamp".length();
-			try {
-				insertStringWord("ComputerCamp", end, attributeSet);
-			} catch (Exception e) {
-				e.printStackTrace();
+	private void checkTextForKeyWords(int pos, int length) throws BadLocationException {
+		int wordStart = 0;
+		for (String line : this.getText(pos, length).split("\n")) {
+			for (String word : line.split(" ")) {
+				int wordEnd = wordStart + word.length();
+				if (getKeyFromList(word) != null) {
+					replaceWithColoredKeyWord(wordStart, getKeyFromList(word));
+				} else {
+					replaceWithColoredString(wordStart, null, word);
+				}
+				wordStart = wordEnd + 1;
 			}
 		}
-
 	}
 
-}
-
-class WritingMode {
-
-	private final String modeName;
-	private final int modeID;
-
-	public WritingMode(String name, int mode) {
-		this.modeID = mode;
-		this.modeName = name;
+	private void replaceWithColoredKeyWord(int offs, ColoredKeyWord word) throws BadLocationException {
+		this.replaceWithColoredString(offs, word.getSet(), word.getKey());
 	}
 
-	public int getModeID() {
-		return modeID;
+	private void replaceWithColoredString(int offs, SimpleAttributeSet set, String word) throws BadLocationException {
+		SimpleAttributeSet toSet = set;
+		if (set != null)
+			toSet = set;
+		super.remove(offs, word.length());
+		super.insertString(offs, word, toSet);
 	}
 
-	public String getModeName() {
-		return modeName;
+	private ColoredKeyWord getKeyFromList(String word) {
+		for (ColoredKeyWord coloredKeyWord : this.coloredKeyWords) {
+			if (coloredKeyWord.getKey().equals(word)) {
+				return coloredKeyWord;
+			}
+		}
+		return null;
 	}
 }

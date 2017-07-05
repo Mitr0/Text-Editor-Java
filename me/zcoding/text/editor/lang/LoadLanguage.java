@@ -3,6 +3,7 @@ package me.zcoding.text.editor.lang;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,7 @@ public class LoadLanguage {
 	}
 
 	public LoadLanguage() {
+		languages = new ArrayList<>();
 		loadLanguages();
 	}
 
@@ -28,15 +30,7 @@ public class LoadLanguage {
 	}
 
 	public void loadLanguages() {
-		Thread loadLanguagesThread = new Thread(() -> {
-			languageFiles = new File(Utils.mainFolder, "lang").listFiles();
-			for (File file : languageFiles) {
-				if (file.getName().endsWith(".lang")) {
-					Language current = new Language();
-					current.setLangMap(readLanguageFile(file));
-				}
-			}
-		}, "loading Languages");
+		load loadLanguagesThread = new load();
 		loadLanguagesThread.start();
 	}
 
@@ -61,6 +55,20 @@ public class LoadLanguage {
 			e.printStackTrace();
 		}
 		return data;
+	}
+
+	public class load extends Thread {
+		public void run() {
+			languageFiles = Utils.langFolder.listFiles();
+			for (File file : languageFiles) {
+				if (file.getName().endsWith(".lang")) {
+					Language current = new Language();
+					current.setFileName(file.getName().split(".lang")[0]);
+					current.setLangMap(readLanguageFile(file));
+					languages.add(current);
+				}
+			}
+		}
 	}
 
 }

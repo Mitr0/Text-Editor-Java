@@ -1,27 +1,25 @@
 package me.zcoding.text.editor.lang;
 
-import me.zcoding.text.editor.utils.Settings;
+import me.zcoding.text.editor.settings.Settings;
 
 public class LanguageManager {
 
-	public static String getFromLanguage(String toGet) {
-		String getToReturn = Settings.curLanguage.getLangMap().get(toGet);
+	private static final DefaultLanguage DEFAULT_LANGUAGE = new DefaultLanguage();
 
-		if (getToReturn.isEmpty() || getToReturn == null) {
-			getToReturn = new DefaultLanguage().getLangMap().get(toGet);
+	public static String getFromLanguage(String toGet, Language l) {
+		String getToReturn = DEFAULT_LANGUAGE.getLangMap().get(toGet);
+
+		if (l != null) {
+			if (l.getLangMap().containsKey(toGet)) {
+				getToReturn = l.getLangMap().get(toGet);
+			}
 		}
 
 		return getToReturn;
 	}
 
-	public static String getFromLanguage(String toGet, Language l) {
-		String getToReturn = l.getLangMap().get(toGet);
-
-		if (getToReturn.isEmpty() || getToReturn == null) {
-			getToReturn = new DefaultLanguage().getLangMap().get(toGet);
-		}
-
-		return getToReturn;
+	public static String getFromLanguage(String toGet) {
+		return getFromLanguage(toGet, Settings.curLanguage);
 	}
 
 }
