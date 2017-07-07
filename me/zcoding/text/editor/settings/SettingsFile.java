@@ -11,16 +11,14 @@ import me.zcoding.text.editor.utils.Utils;
 public class SettingsFile extends A_File {
 
 	public SettingsFile() {
-		super("settings.set", Utils.settingsFolder);
+		super("language.set", Utils.settingsFolder);
 	}
 
 	@Override
 	public List<String> toWrite() throws Exception {
-		return new ArrayList<String>() {
-			{
-				add(Settings.curLanguage.getFile_name());
-			}
-		};
+		List<String> aList = new ArrayList<>();
+		aList.add(Settings.curLanguage.getFile_name());
+		return aList;
 	}
 
 	@Override
@@ -31,12 +29,17 @@ public class SettingsFile extends A_File {
 					for (Language language : Settings.avaiableLanguages) {
 						if (language.getFile_name().equals(data.get(0))) {
 							Settings.curLanguage = language;
+							System.out.println(Settings.curLanguage.getFile_name());
 							break;
 						}
 					}
 				}
 			}
 		}
+	}
+
+	public boolean replace() {
+		return true;
 	}
 
 }

@@ -6,6 +6,7 @@ import java.util.List;
 import me.zcoding.text.editor.gui.syntaxHighlighting.LoadSyntax;
 import me.zcoding.text.editor.lang.LoadLanguage;
 import me.zcoding.text.editor.settings.Settings;
+import me.zcoding.text.editor.settings.SettingsFile;
 
 public class FileManager {
 
@@ -16,7 +17,6 @@ public class FileManager {
 	public FileManager() {
 		INSTANCE = this;
 		addAll();
-		read();
 
 		onLoad();
 	}
@@ -29,9 +29,13 @@ public class FileManager {
 		loadSyntax = new LoadSyntax();
 		Settings.allSyntaxes = loadSyntax.getColoredKeywords();
 		Settings.avaiableLanguages = loadLanguage.getLanguages();
+		read();
 	}
 
+	SettingsFile settingsFile = new SettingsFile();
+
 	private void addAll() {
+		addFile(settingsFile);
 	}
 
 	public void write() {

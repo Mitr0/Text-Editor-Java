@@ -3,6 +3,8 @@ package me.zcoding.text.editor.gui.syntaxHighlighting;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -10,16 +12,19 @@ import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
+import me.zcoding.text.editor.gui.Main_GUI;
 import me.zcoding.text.editor.settings.Settings;
 
-@SuppressWarnings("serial")
 public class Colored_Doc extends DefaultStyledDocument {
 
 	private List<ColoredKeyWord> coloredKeyWords = new ArrayList<>();
 
 	private SimpleAttributeSet standard = new SimpleAttributeSet();
 
+	Timer timer;
+
 	public Colored_Doc() {
+		timer = new Timer();
 		StyleConstants.setForeground(standard, Color.BLACK);
 	}
 
@@ -59,10 +64,41 @@ public class Colored_Doc extends DefaultStyledDocument {
 		return coloredKeyWords;
 	}
 
+	@Override
+	public void remove(int offs, int len) throws BadLocationException {
+		super.remove(offs, len);
+
+	}
+
 	public void insertString(int offs, String str, AttributeSet a) throws BadLocationException {
 		setColoredKeyWords(Settings.curSyntax.getColoredKeyWords());
 		super.insertString(offs, str, a);
 		colorizeTheText();
+		startTimer();
+	}
+
+	private void startTimer() {
+		if (timer != null) {
+			timer.cancel();
+			timer.purge();
+			timer = new Timer();
+		}
+		timer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				save();
+			}
+		}, 5000);
+	}
+
+	private void save() {
+		for (int i = 0; i < Main_GUI.INSTANCE.getTextPanes().size(); i++) {
+			PaneFileCompound compound = Main_GUI.INSTANCE.getTextPanes().get(i);
+			if (compound.getFile() != null) {
+				Main_GUI.INSTANCE.save(i);
+				System.out.println("saved: " + compound.getFile().getName() + "_" + i);
+			}
+		}
 	}
 
 	public void colorizeTheText() throws BadLocationException {
@@ -92,7 +128,7 @@ public class Colored_Doc extends DefaultStyledDocument {
 		SimpleAttributeSet toSet = set;
 		if (set != null)
 			toSet = set;
-		super.remove(offs, word.length());
+		this.remove(offs, word.length());
 		super.insertString(offs, word, toSet);
 	}
 

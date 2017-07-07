@@ -6,8 +6,11 @@ import me.zcoding.text.editor.utils.Utils;
 
 public class Main {
 
-	@SuppressWarnings("unused")
 	public static void main(String[] main) {
+		init();
+	}
+
+	private static void init() {
 		try {
 			if (!Utils.mainFolder.exists())
 				Utils.mainFolder.mkdir();
@@ -18,10 +21,9 @@ public class Main {
 			if (!Utils.syntaxFolder.exists())
 				Utils.syntaxFolder.mkdir();
 
-			FileManager fileManager = new FileManager();
+			new FileManager();
 
-			Main_GUI main_GUI = new Main_GUI();
-			main_GUI.init();
+			new Main_GUI().init();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

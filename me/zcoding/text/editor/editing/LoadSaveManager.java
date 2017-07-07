@@ -26,19 +26,15 @@ public class LoadSaveManager {
 		return list;
 	}
 
-	public static void saveFile(List<String> toSave, File toSaves) {
-		try {
-			FileWriter fileWriter = new FileWriter(toSaves);
-			BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-			for (String string : toSave) {
-				bufferedWriter.write(string);
-				bufferedWriter.newLine();
-			}
-			bufferedWriter.flush();
-			bufferedWriter.close();
-		} catch (Exception e) {
-			e.printStackTrace();
+	public static void saveFile(List<String> toSave, File toSaves) throws Exception {
+		FileWriter fileWriter = new FileWriter(toSaves);
+		BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+		for (String string : toSave) {
+			bufferedWriter.write(string);
+			bufferedWriter.newLine();
 		}
+		bufferedWriter.flush();
+		bufferedWriter.close();
 	}
 
 }

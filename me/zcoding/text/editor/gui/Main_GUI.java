@@ -1,6 +1,9 @@
 package me.zcoding.text.editor.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -16,22 +19,16 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.border.EmptyBorder;
 
 import me.zcoding.text.editor.editing.LoadSaveManager;
-import me.zcoding.text.editor.filesystem.FileManager;
-import me.zcoding.text.editor.gui.syntaxHighlighting.ColoredKeyWord;
 import me.zcoding.text.editor.gui.syntaxHighlighting.ColoredKeyWordList;
-import me.zcoding.text.editor.gui.syntaxHighlighting.Colored_Doc;
-import me.zcoding.text.editor.gui.syntaxHighlighting.DefaultSyntax;
 import me.zcoding.text.editor.gui.syntaxHighlighting.PaneFileCompound;
 import me.zcoding.text.editor.lang.Language;
-import me.zcoding.text.editor.lang.LanguageManager;
 import me.zcoding.text.editor.settings.Settings;
 
 public class Main_GUI extends JFrame {
@@ -40,27 +37,32 @@ public class Main_GUI extends JFrame {
 
 	private JPanel contentPane;
 
-	// public final JScrollPane scrollPane = new JScrollPane();
-	// public final JTextPane WritingArea = new JTextPane();
 	public final JMenuBar menuBar = new JMenuBar();
-	public final JMenu mnFiles = new JMenu("Loading...");
-	public final JMenu mnSettings = new JMenu("Settings");
-	public final JMenu mnLanguages = new JMenu("Languages");
-	public final JMenuItem mntmDefault = new JMenuItem("Default");
+	public final JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+
+	private List<PaneFileCompound> textPanes;
+
+	public final JMenu mnDatei = new JMenu("Datei");
+	public final JMenuItem mntmNeu = new JMenuItem("Neu");
+	public final JMenuItem mntmffnen = new JMenuItem("÷ffnen");
 	public final JMenuItem mntmSpeichern = new JMenuItem("Speichern");
 	public final JMenuItem mntmSpeichernUnter = new JMenuItem("Speichern Unter");
-	public final JMenu mnSyntax = new JMenu("Syntax");
-	public final JMenuItem mntmCurrent = new JMenuItem("Text");
-	public final JMenuItem mntmText = new JMenuItem("Text");
-	public final JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-	public final JMenuItem mntmLaden = new JMenuItem("Laden");
+	public final JMenuItem mntmAllesSpeichern = new JMenuItem("Alles Speichern");
+	public final JMenuItem mntmSchlieen = new JMenuItem("Schlieﬂen");
+	public final JMenuItem mntmAllesSchlieen = new JMenuItem("Alles Schlieﬂen");
+	public final JMenuItem mntmBeenden = new JMenuItem("Beenden");
 
-	private List<PaneFileCompound> textPanes = new ArrayList<>();
+	public List<PaneFileCompound> getTextPanes() {
+		return textPanes;
+	}
+
+	public static Main_GUI INSTANCE;
 
 	public void init() {
 		try {
 			Main_GUI frame = new Main_GUI();
 			frame.setVisible(true);
+			INSTANCE = frame;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -70,65 +72,85 @@ public class Main_GUI extends JFrame {
 	 * Create the frame.
 	 */
 	public Main_GUI() {
+		setIconImage(Toolkit.getDefaultToolkit().getImage(Main_GUI.class.getResource("/assets/icon/pencil (2).png")));
+		setMinimumSize(new Dimension(300, 400));
+		setBackground(Color.WHITE);
+		setTitle("SupEdit");
+		textPanes = new ArrayList<>();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 865, 557);
 		{
+			this.menuBar.setBackground(Color.WHITE);
+			this.menuBar.setOpaque(false);
 			setJMenuBar(this.menuBar);
 		}
 		{
-			this.menuBar.add(this.mnFiles);
+			this.mnDatei.setBackground(Color.WHITE);
+			this.menuBar.add(this.mnDatei);
 		}
 		{
-			this.mntmLaden.addMouseListener(new MouseAdapter() {
+			this.mntmNeu.setAction(new NewAction("Neu", KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_MASK)));
+			this.mnDatei.add(this.mntmNeu);
+		}
+		{
+			this.mntmffnen
+					.setAction(new OpenAction("÷ffnen", KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK)));
+			this.mnDatei.add(this.mntmffnen);
+		}
+		{
+			this.mntmSpeichern.setAction(
+					new SaveAction("Speichern", false, KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK)));
+			this.mnDatei.add(this.mntmSpeichern);
+		}
+		{
+			this.mntmSpeichernUnter.setAction(new SaveAction("Speichern Unter", true,
+					KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)));
+			this.mnDatei.add(this.mntmSpeichernUnter);
+		}
+		{
+			this.mnDatei.add(this.mntmAllesSpeichern);
+			this.mntmAllesSpeichern.setAction(new SaveAction("Alles Speichern", false, null));
+		}
+		{
+			this.mntmSchlieen.addMouseListener(new MouseAdapter() {
 				@Override
-				public void mouseReleased(MouseEvent e) {
-					JFileChooser chooser = new JFileChooser();
-					int returnVal = chooser.showOpenDialog(null);
-					if (returnVal == JFileChooser.APPROVE_OPTION) {
-						File file = chooser.getSelectedFile();
-						addTabToPane(file.getName(), LoadSaveManager.loadFile(file), file);
+				public void mouseReleased(MouseEvent arg0) {
+					if (tabbedPane.getTabCount() > 0) {
+						save();
+						closeTab(tabbedPane.getSelectedIndex());
 					}
 				}
 			});
-			this.mnFiles.add(this.mntmLaden);
+			this.mnDatei.add(this.mntmSchlieen);
 		}
 		{
-			this.mntmSpeichern.setAction(new SaveAction("menu_files_save", false,
-					KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK)));
-			this.mntmSpeichern.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK));
-			this.mnFiles.add(this.mntmSpeichern);
-			this.mnFiles.add(this.mntmSpeichernUnter);
-		}
-		{
-			this.menuBar.add(this.mnSettings);
-		}
-		{
-			this.mnSettings.add(this.mnLanguages);
-		}
-		{
-			this.mntmDefault.setEnabled(false);
-			this.mnLanguages.add(mntmDefault);
-			this.mnLanguages.addSeparator();
-			// TODO: Better Language Handeling
-			initLanguages(mnLanguages);
-		}
-		{
-			this.mnSettings.add(this.mnSyntax);
-			{
-				this.mntmCurrent.setEnabled(false);
-				this.mnSyntax.add(this.mntmCurrent);
-			}
-			this.mnSyntax.addSeparator();
-			initSyntaxes(mnSyntax);
-		}
-		{
-			this.mntmText.addMouseListener(new MouseAdapter() {
+			this.mntmAllesSchlieen.addMouseListener(new MouseAdapter() {
+
 				@Override
-				public void mouseReleased(MouseEvent e) {
-					Settings.curSyntax = new DefaultSyntax();
+				public void mouseReleased(MouseEvent arg0) {
+					if (tabbedPane.getTabCount() > 0) {
+						for (int i = tabbedPane.getTabCount() - 1; i >= 0; i--) {
+							tabbedPane.setSelectedIndex(i);
+							save();
+							closeTab(tabbedPane.getSelectedIndex());
+						}
+					}
 				}
 			});
-			this.mnSyntax.add(this.mntmText);
+			this.mnDatei.add(this.mntmAllesSchlieen);
+		}
+		this.mnDatei.addSeparator();
+		{
+			this.mntmBeenden.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseReleased(MouseEvent arg0) {
+					int returnID = JOptionPane.showConfirmDialog(null, "Sicher", "Beenden", JOptionPane.YES_NO_OPTION);
+					if (returnID == JOptionPane.OK_OPTION) {
+						System.exit(0);
+					}
+				}
+			});
+			this.mnDatei.add(this.mntmBeenden);
 		}
 
 		contentPane = new JPanel();
@@ -141,36 +163,40 @@ public class Main_GUI extends JFrame {
 		updateNames();
 	}
 
-	public void updateNames() {
-		this.mnFiles.setText(LanguageManager.getFromLanguage("menu_files"));
-		this.mnSettings.setText(LanguageManager.getFromLanguage("menu_settings"));
-		this.mnLanguages.setText(LanguageManager.getFromLanguage("menu_settings_language"));
-		this.mntmSpeichern.setText(LanguageManager.getFromLanguage("menu_files_save"));
-		this.mntmSpeichernUnter.setText(LanguageManager.getFromLanguage("menu_files_saveas"));
-		this.mnSyntax.setText(LanguageManager.getFromLanguage("menu_settings_syntax"));
-		this.mntmLaden.setText(LanguageManager.getFromLanguage("menu_files_load"));
-		this.mntmDefault.setText(Settings.curLanguage == null ? "Default" : Settings.curLanguage.getName());
+	private void closeTab(int tab) {
+		textPanes.get(tab).stopTimer();
+		textPanes.remove(tab);
+		tabbedPane.remove(tab);
 	}
 
-	public void addTabToPane(String name, List<String> data, File from) {
-		Colored_Doc doc = new Colored_Doc();
-		List<ColoredKeyWord> words = new ArrayList<ColoredKeyWord>();
-		words = Settings.curSyntax.getColoredKeyWords();
-		doc.setColoredKeyWords(words);
-		JPanel panel = new JPanel();
-		JScrollPane scrollPane = new JScrollPane();
-		JTextPane textPane = new JTextPane();
-		panel.setLayout(new BorderLayout(0, 0));
-		textPane.setDocument(doc);
-		scrollPane.setViewportView(textPane);
-		String toAdd = "";
-		for (String string : data) {
-			toAdd += string + "\n";
+	public void openFile() {
+		JFileChooser chooser = new JFileChooser();
+		int jFileChooserReturn = chooser.showOpenDialog(null);
+		if (jFileChooserReturn == JFileChooser.APPROVE_OPTION) {
+			File selectedFile = chooser.getSelectedFile();
+			addTabToPane(selectedFile.getName(), LoadSaveManager.loadFile(selectedFile), selectedFile);
+			tabbedPane.setSelectedIndex(textPanes.size() - 1);
 		}
-		textPane.setText(toAdd);
-		panel.add(scrollPane, BorderLayout.CENTER);
-		this.tabbedPane.addTab(name, panel);
-		this.textPanes.add(new PaneFileCompound(from, textPane));
+	}
+
+	/**
+	 * Updates all names when Language changed
+	 */
+	public void updateNames() {
+	}
+
+	private int tabCount = -1;
+
+	public void addTabToPane(String name, List<String> data, File from) {
+		PaneFileCompound compound = new PaneFileCompound(from, Settings.allSyntaxes.get(0));
+		compound.setContent(data);
+		this.tabbedPane.addTab(name, compound.getPanel());
+		this.textPanes.add(compound);
+	}
+
+	public void addEmptyFile() {
+		tabCount++;
+		addTabToPane("neu " + tabCount, new ArrayList<String>(), null);
 	}
 
 	private void initSyntaxes(JMenu menu) {
@@ -207,11 +233,17 @@ public class Main_GUI extends JFrame {
 	class SaveAction extends AbstractAction {
 
 		private boolean saveAs = false;
+		private boolean all = false;
 
-		public SaveAction(String title, boolean as, KeyStroke acceleratorKey) {
-			super(LanguageManager.getFromLanguage(title), null);
+		public SaveAction(String title, boolean as, KeyStroke acceleratorKey, boolean all) {
+			super(title, null);
 			putValue(ACCELERATOR_KEY, acceleratorKey);
 			this.saveAs = as;
+			this.all = all;
+		}
+
+		public SaveAction(String title, boolean as, KeyStroke acceleratorKey) {
+			this(title, as, acceleratorKey, false);
 		}
 
 		public void actionPerformed(ActionEvent ae) {
@@ -219,21 +251,88 @@ public class Main_GUI extends JFrame {
 				save();
 			else
 				saveAs();
+			if (all) {
+				saveAll();
+			}
+		}
+	}
+
+	class NewAction extends AbstractAction {
+
+		public NewAction(String title, KeyStroke acceleratorKey) {
+			super(title, null);
+			putValue(ACCELERATOR_KEY, acceleratorKey);
 		}
 
-		public void saveAs() {
+		public void actionPerformed(ActionEvent ae) {
+			addEmptyFile();
+		}
+	}
 
+	class OpenAction extends AbstractAction {
+
+		public OpenAction(String title, KeyStroke acceleratorKey) {
+			super(title, null);
+			putValue(ACCELERATOR_KEY, acceleratorKey);
 		}
 
-		public void save() {
-			if (tabbedPane.getSelectedIndex() >= 0) {
+		public void actionPerformed(ActionEvent ae) {
+			openFile();
+		}
+	}
+
+	public void saveAll() {
+		if (tabbedPane.getTabCount() > 0) {
+			for (int i = tabbedPane.getTabCount() - 1; i >= 0; i--) {
+				tabbedPane.setSelectedIndex(i);
+				save();
+			}
+		}
+	}
+
+	public void save(int selectedTab) {
+		if (tabbedPane.getSelectedIndex() >= 0) {
+			List<String> list = new ArrayList<>();
+			PaneFileCompound compound = textPanes.get(selectedTab);
+			for (String string : compound.getContent().split("\n")) {
+				list.add(string);
+			}
+			try {
+				if (compound.getFile() != null)
+					LoadSaveManager.saveFile(list, compound.getFile());
+				else
+					saveAs();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public void save() {
+		save(tabbedPane.getSelectedIndex());
+	}
+
+	private void saveAs() {
+		if (tabbedPane.getTabCount() > 0) {
+			JFileChooser chooser = new JFileChooser();
+			int returnType = chooser.showSaveDialog(null);
+			if (returnType == JFileChooser.APPROVE_OPTION) {
+				File file = chooser.getSelectedFile();
+				if (file.exists()) {
+					file.delete();
+				}
 				List<String> list = new ArrayList<>();
-				FileManager.INSTANCE.write();
 				PaneFileCompound compound = textPanes.get(tabbedPane.getSelectedIndex());
-				for (String string : compound.getjTextPane().getText().split("\n")) {
+				for (String string : compound.getContent().split("\n")) {
 					list.add(string);
 				}
-				LoadSaveManager.saveFile(list, compound.getFile());
+				try {
+					LoadSaveManager.saveFile(list, file);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				tabbedPane.setTitleAt(tabbedPane.getSelectedIndex(), file.getName());
+				compound.setFile(file);
 			}
 		}
 	}

@@ -22,4 +22,6 @@ public class Settings {
 	public static ColoredKeyWordList curSyntax = new DefaultSyntax();
 	public static List<ColoredKeyWordList> allSyntaxes = new ArrayList<>();
 
+	public static int sleepTime = 1000 * 5;
+
 }

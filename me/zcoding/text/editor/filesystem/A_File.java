@@ -49,14 +49,26 @@ public abstract class A_File {
 
 	public abstract void onRead(List<String> data) throws Exception;
 
+	public abstract boolean replace();
+
 	protected void write() {
+		if (this.replace())
+			try {
+				this.curFile.delete();
+				this.curFile.createNewFile();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		try {
 			FileWriter writer = new FileWriter(curFile);
 			BufferedWriter bufferedWriter = new BufferedWriter(writer);
 
 			for (String string : toWrite()) {
-				bufferedWriter.write(string);
-				bufferedWriter.newLine();
+				if (string != null) {
+					System.out.println(string);
+					bufferedWriter.write(string);
+					bufferedWriter.newLine();
+				}
 			}
 			bufferedWriter.flush();
 			bufferedWriter.close();
@@ -74,6 +86,7 @@ public abstract class A_File {
 
 			String line;
 			while ((line = bufferedReader.readLine()) != null) {
+				System.out.println(line);
 				rList.add(line);
 			}
 			bufferedReader.close();

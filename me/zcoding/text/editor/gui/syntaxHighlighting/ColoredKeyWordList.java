@@ -24,5 +24,4 @@ public class ColoredKeyWordList {
 	public List<ColoredKeyWord> getColoredKeyWords() {
 		return coloredKeyWords;
 	}
-
 }
